@@ -1,0 +1,867 @@
+:root {
+  --bg: #01020a;
+  --deep: #030510;
+  --panel: rgba(4,8,24,0.92);
+  --gold: #f5c842;        /* 13.1:1 vs bg — AAA ✓ */
+  --gold-dim: rgba(245,200,66,0.15);
+  --rebel: #e84646;
+  --empire: #4a9eff;
+  --sith: #b020e0;
+  --jedi: #00d4ff;        /* 11.8:1 vs bg — AAA ✓ */
+  --text: #c8d8f0;        /* 14.2:1 vs bg — AAA ✓ */
+  --muted: #8099b8;       /* 7.1:1 vs bg — AAA ✓ */
+  --border: rgba(100,160,255,0.18);
+  --glow: 0 0 18px rgba(0,212,255,0.4);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html {
+  scroll-behavior: smooth;
+  scroll-snap-type: y mandatory;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 16px;
+  overflow-x: hidden;
+}
+
+/* ── STARFIELD ── */
+#starfield {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+}
+
+/* ── HERO ── */
+#hero {
+  position: relative; z-index: 1;
+  height: 100svh;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  overflow: hidden;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  text-align: center; padding: 40px 32px 32px;
+}
+.hero-eyebrow {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 13px; letter-spacing: 4px; color: var(--gold);
+  text-transform: uppercase; margin-bottom: 18px; opacity: .9;
+}
+.hero-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: clamp(36px, 6vw, 78px);
+  font-weight: 900; line-height: 1.05; color: #fff;
+  text-shadow: 0 0 40px rgba(0,212,255,0.3), 0 0 80px rgba(0,212,255,0.1);
+  margin-bottom: 20px;
+}
+.hero-title span { color: var(--gold); }
+.hero-sub {
+  font-size: 18px; font-weight: 400;
+  color: var(--muted); max-width: 560px;
+  line-height: 1.65; margin-bottom: 40px;
+}
+.hero-cta {
+  display: flex; gap: 16px; flex-wrap: wrap; justify-content: center;
+}
+.btn {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 13px; letter-spacing: 2px; text-transform: uppercase;
+  padding: 13px 30px; border-radius: 2px; cursor: pointer;
+  text-decoration: none; transition: all .25s; border: none;
+}
+.btn-primary {
+  background: var(--gold); color: #000; font-weight: 700;
+}
+.btn-primary:hover {
+  background: #fff; box-shadow: 0 0 24px rgba(245,200,66,0.6);
+}
+.btn-ghost {
+  background: transparent; color: var(--jedi);
+  border: 1px solid rgba(0,212,255,0.4);
+}
+.btn-ghost:hover {
+  background: rgba(0,212,255,0.08); box-shadow: var(--glow);
+}
+.btn-outline {
+  background: transparent; color: var(--muted);
+  border: 1px solid rgba(128,153,184,0.35);
+}
+.btn-outline:hover {
+  color: var(--gold);
+  border-color: rgba(245,200,66,0.4);
+  background: rgba(245,200,66,0.06);
+}
+
+/* ── SECTION HEADER ROW (label+title left | prev+next right) ── */
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 12px;
+  flex-shrink: 0;
+}
+.section-nav {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+  padding-bottom: 6px; /* aligns button baseline with section-title bottom edge */
+}
+.sec-btn {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.sec-btn::after {
+  content: attr(data-label);
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 1.5px;
+  color: var(--jedi);
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .2s;
+}
+.sec-btn:hover::after { opacity: 1; }
+
+.scroll-hint {
+  position: absolute; bottom: 36px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 12px; letter-spacing: 3px; color: var(--muted);
+  animation: bounce 2.4s infinite;
+  display: flex; align-items: center; gap: 8px;
+}
+@keyframes bounce {
+  0%,100% { transform: translateY(0); opacity: .5; }
+  50%      { transform: translateY(6px); opacity: 1; }
+}
+
+/* ── SECTIONS (each = 1 screen) ── */
+section {
+  position: relative; z-index: 1;
+  height: 100svh;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  overflow: hidden;
+  display: flex; flex-direction: column;
+  padding: 40px 32px 16px;
+  max-width: 1400px; margin: 0 auto;
+  box-sizing: border-box;
+}
+.section-label {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 12px; letter-spacing: 4px; color: var(--gold);
+  text-transform: uppercase; margin-bottom: 6px; opacity: .9;
+  flex-shrink: 0;
+}
+.section-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: clamp(20px, 2.5vw, 32px); font-weight: 700;
+  color: #fff; margin-bottom: 6px;
+  flex-shrink: 0;
+}
+.section-sub {
+  color: var(--muted); font-size: 15px;
+  font-weight: 400; max-width: 520px;
+  margin-bottom: 10px; line-height: 1.5;
+  flex-shrink: 0;
+}
+
+/* ── FOLLOW A CHARACTER ── */
+#follow .section-sub { white-space: nowrap; max-width: none; }
+
+/* Invisible spacer — preserves the layout height the old char-selector occupied */
+.char-selector-spacer {
+  flex-shrink: 0;
+  height: 46px;   /* 36px button + 10px gap = same as old selector row */
+  margin-bottom: 10px;
+}
+
+/* ── Char grid inside story panel ── */
+
+.char-selector {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 10px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.char-row {
+  display: flex;
+  gap: 4px;
+}
+.char-btn {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 12px; letter-spacing: 1px; text-transform: uppercase;
+  padding: 5px 4px; border-radius: 2px; cursor: pointer;
+  border: 1px solid var(--border); background: transparent;
+  color: var(--muted); transition: all .2s;
+  min-height: 30px; flex: 1; text-align: center;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.char-btn:hover { color: #fff; border-color: var(--jedi); }
+.char-btn.active {
+  background: var(--gold); color: #000;
+  border-color: var(--gold); font-weight: 700;
+}
+
+/* Beat viewport — fills remaining story panel height, JS-paged */
+.story-beat-area {
+  flex: 1;
+  position: relative;
+  border-left: 1px solid var(--border);
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* Scroll cue pinned to the bottom of the beat area */
+#beat-hint {
+  position: absolute;
+  bottom: 14px;
+  left: 0; right: 0;
+  text-align: center;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
+  color: var(--muted);
+  pointer-events: none;
+  z-index: 5;
+  animation: beat-hint-pulse 2.8s ease-in-out infinite;
+}
+@keyframes beat-hint-pulse {
+  0%, 100% { opacity: 0.25; }
+  50%       { opacity: 0.85; }
+}
+
+.follow-layout {
+  display: grid;
+  grid-template-columns: 1fr 576px;
+  gap: 24px;
+  flex: 1; min-height: 0;
+  align-items: stretch;
+}
+
+/* ── FOLLOW MAP — transparent, edges fade into starfield ── */
+#follow-map-wrap {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  position: relative; overflow: hidden;
+  min-height: 0;
+  /* SVG fog/arcs fade over a wider band — softer handoff to starfield */
+  mask-image:
+    linear-gradient(to right,  transparent 0%,   black 18%, black 100%),
+    linear-gradient(to bottom, transparent 0%,   black 14%, black 86%, transparent 100%);
+  mask-composite: intersect;
+  -webkit-mask-image:
+    linear-gradient(to right,  transparent 0%,   black 18%, black 100%),
+    linear-gradient(to bottom, transparent 0%,   black 14%, black 86%, transparent 100%);
+  -webkit-mask-composite: destination-in;
+}
+/* hide galaxy base ellipse + grid — starfield is the background now */
+#follow-svg > ellipse { display: none; }
+#follow-svg .grid     { display: none; }
+#follow-svg { width: 100%; height: 100%; display: block; position: relative; z-index: 1; }
+
+/* Particle canvas — section-level, fades at all four edges so particles
+   dissolve into the surrounding starfield with no hard boundary */
+#follow-particles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  /* fade particles toward every edge of the section */
+  mask-image:
+    linear-gradient(to right,  transparent 0%, black 20%, black 80%, transparent 100%),
+    linear-gradient(to bottom, transparent 0%, black 16%, black 84%, transparent 100%);
+  mask-composite: intersect;
+  -webkit-mask-image:
+    linear-gradient(to right,  transparent 0%, black 20%, black 80%, transparent 100%),
+    linear-gradient(to bottom, transparent 0%, black 16%, black 84%, transparent 100%);
+  -webkit-mask-composite: destination-in;
+}
+
+/* ── STORY PANEL — paged, one beat per "screen" ── */
+.story-panel {
+  flex: 1; min-height: 0;
+  display: flex; flex-direction: column;   /* char grid on top, beat area below */
+  position: relative;
+  overflow: hidden;
+  /* no border here — border lives on .story-beat-area so it starts below the char grid */
+}
+.story-track {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  will-change: transform;
+  transition: transform .45s cubic-bezier(.4,0,.2,1);
+}
+.story-beat {
+  display: flex; flex-direction: column;
+  position: relative; overflow: hidden;
+  /* height set dynamically = panel height */
+}
+
+/* beat image banner — 40% of beat height; Follow bumped to match Journeys' taller image */
+.beat-image-bg {
+  flex: 0 0 40%;
+  position: relative; overflow: hidden;
+  background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%;
+}
+#follow .beat-image-bg { flex: 0 0 50%; }
+/* real photo sits at z-index 0; CSS art shows through if image fails */
+.beat-img {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover; object-position: center top;
+  z-index: 0;
+  transition: opacity .4s;
+}
+
+/* cinematic vignette + scanline texture */
+.beat-image-bg::before {
+  content: ''; position: absolute; inset: 0; z-index: 1;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,0,0,0.04) 2px,
+    rgba(0,0,0,0.04) 4px
+  );
+  pointer-events: none;
+}
+.beat-image-bg::after {
+  content: ''; position: absolute; inset: 0; z-index: 2;
+  background:
+    linear-gradient(to bottom, rgba(1,2,10,0.25) 0%, transparent 30%, transparent 55%, rgba(1,2,10,0.97) 100%),
+    radial-gradient(ellipse 120% 100% at 50% 100%, rgba(1,2,10,0.4) 0%, transparent 70%);
+}
+.beat-image-label {
+  position: absolute; bottom: 11px; left: 14px; z-index: 3;
+  font-family: 'Orbitron', sans-serif; font-size: 11px;
+  color: rgba(255,255,255,0.88); letter-spacing: 1.5px;
+  text-shadow: 0 1px 6px rgba(0,0,0,0.9);
+}
+
+/* beat header — episode label left, START/END pill right */
+.beat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+  flex-shrink: 0;
+}
+/* pull margin off beat-ep now that .beat-header owns the spacing */
+.beat-header .beat-ep { margin-bottom: 0; }
+
+/* start / end pills */
+.beat-pill {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px; letter-spacing: 2.5px; text-transform: uppercase;
+  padding: 3px 10px; border-radius: 20px;
+  pointer-events: none; flex-shrink: 0;
+}
+.beat-pill-start {
+  background: rgba(0,212,255,0.18);
+  color: var(--jedi); border: 1px solid rgba(0,212,255,0.4);
+}
+.beat-pill-end {
+  background: rgba(245,200,66,0.18);
+  color: var(--gold); border: 1px solid rgba(245,200,66,0.4);
+}
+
+/* beat body — remaining 62% */
+.beat-body {
+  flex: 1; min-height: 0;
+  padding: 16px 18px 20px;
+  display: flex; flex-direction: column;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+.beat-body::-webkit-scrollbar { display: none; }
+
+.beat-ep {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px; letter-spacing: 2.5px; color: var(--muted);
+  text-transform: uppercase; flex-shrink: 0;
+}
+.beat-planet {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 18px; font-weight: 700; color: #fff;
+  margin-bottom: 14px; flex-shrink: 0;
+  line-height: 1.1;
+}
+.beat-desc {
+  font-size: 13px; color: var(--muted); line-height: 1.7;
+  font-weight: 400; flex: 1;
+}
+
+/* scroll hint arrows inside the panel */
+.panel-nav-hint {
+  position: absolute; bottom: 14px; right: 14px; z-index: 10;
+  display: flex; flex-direction: column; gap: 4px; pointer-events: none;
+}
+.panel-nav-hint span {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px; letter-spacing: 2px; color: var(--muted);
+  opacity: 0.5; text-align: right;
+}
+
+/* ── ALL JOURNEYS ── */
+#journeys .section-sub { white-space: nowrap; max-width: none; }
+
+.journeys-layout {
+  display: grid;
+  grid-template-columns: 1fr 576px;
+  gap: 24px;
+  flex: 1; min-height: 0;
+  align-items: stretch;
+}
+
+#journeys-map-wrap {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  position: relative; overflow: hidden;
+  min-height: 0;
+  mask-image:
+    linear-gradient(to right,  transparent 0%, black 18%, black 100%),
+    linear-gradient(to bottom, transparent 0%, black 14%, black 86%, transparent 100%);
+  mask-composite: intersect;
+  -webkit-mask-image:
+    linear-gradient(to right,  transparent 0%, black 18%, black 100%),
+    linear-gradient(to bottom, transparent 0%, black 14%, black 86%, transparent 100%);
+  -webkit-mask-composite: destination-in;
+}
+#journeys-svg > ellipse { display: none; }
+#journeys-svg .grid     { display: none; }
+#journeys-svg { width: 100%; height: 100%; display: block; position: relative; z-index: 1; }
+
+/* Journeys particle canvas — section-level, fades at all four edges */
+#journeys-particles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  mask-image:
+    linear-gradient(to right,  transparent 0%, black 20%, black 80%, transparent 100%),
+    linear-gradient(to bottom, transparent 0%, black 16%, black 84%, transparent 100%);
+  mask-composite: intersect;
+  -webkit-mask-image:
+    linear-gradient(to right,  transparent 0%, black 20%, black 80%, transparent 100%),
+    linear-gradient(to bottom, transparent 0%, black 16%, black 84%, transparent 100%);
+  -webkit-mask-composite: destination-in;
+}
+
+/* Episode beat — character colour row */
+.beat-chars {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11px; letter-spacing: 1px;
+  margin-bottom: 12px; flex-shrink: 0;
+  line-height: 1.7;
+}
+
+/* Inline character name label inside beat desc */
+.jbeat-char {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px; letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+/* Scroll hint for journeys panel */
+#journeys-beat-hint {
+  position: absolute;
+  bottom: 14px;
+  left: 0; right: 0;
+  text-align: center;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
+  color: var(--muted);
+  pointer-events: none;
+  z-index: 5;
+  animation: beat-hint-pulse 2.8s ease-in-out infinite;
+}
+
+/* ── DASHBOARD ── */
+#dashboard {
+  /* height: 100svh; overflow: hidden; display: flex; flex-direction: column — all from section rule */
+}
+
+/* Inner snap-scroll canvas — sits below the pinned section header */
+.dash-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  scroll-snap-type: y mandatory;
+  margin-top: 40px;               /* breathing room between header text and rows */
+  /* Hide scrollbar while keeping scroll/snap functionality */
+  scrollbar-width: none;          /* Firefox */
+  -ms-overflow-style: none;       /* IE / Edge */
+}
+.dash-scroll::-webkit-scrollbar {
+  display: none;                  /* Chrome / Safari / Opera */
+}
+
+/* Each snap page fills the canvas exactly */
+.dash-snap-page {
+  height: 100%;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+/* Page 2 allows internal scroll for the heatmap overflow */
+.dash-snap-page--overflow {
+  overflow-y: auto;
+}
+
+/* Pagination line header inside each snap page */
+.dash-page-header {
+  flex-shrink: 0;
+  padding: 6px 0 10px;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  color: #fff;
+  letter-spacing: 0.4px;
+}
+
+/* ── Row 1: dual KPI cards ── */
+.dash-row1 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  flex-shrink: 0;
+}
+
+.dash-kpi-card {
+  min-height: 400px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 28px 26px 20px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+.dash-kpi-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--jedi), transparent);
+  opacity: .45;
+}
+/* subtle corner accent */
+.dash-kpi-card::after {
+  content: '';
+  position: absolute; bottom: 0; right: 0;
+  width: 120px; height: 120px;
+  background: radial-gradient(circle at bottom right,
+    rgba(0,212,255,0.06) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.dash-kpi-label {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 2.5px;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 10px;
+  flex-shrink: 0;
+}
+.dash-kpi-value-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 7px;
+  flex-shrink: 0;
+  gap: 12px;
+}
+.dash-kpi-value {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 38px;
+  font-weight: 900;
+  color: var(--gold);
+  line-height: 1;
+  text-shadow: 0 0 24px rgba(245,200,66,0.45);
+  flex-shrink: 0;
+}
+.dash-kpi-pill {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 1.5px;
+  color: var(--muted);
+  text-transform: uppercase;
+  border: 1px solid var(--border);
+  padding: 0 12px;
+  border-radius: 20px;
+  background: rgba(0, 0, 0, 0.25);
+  white-space: nowrap;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+/* Toggle row — sits flush-right below the pill */
+.dash-kpi-toggle-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 6px;
+  flex-shrink: 0;
+}
+.dash-kpi-toggle {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  /* Inactive = same as hover (cyan) */
+  color: var(--jedi);
+  background: transparent;
+  border: 1px solid rgba(0,212,255,0.4);
+  padding: 4px 14px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: color .2s, border-color .2s, background .2s;
+}
+.dash-kpi-toggle:hover {
+  background: rgba(0,212,255,0.07);
+}
+.dash-kpi-toggle.active {
+  /* Active = filter on (gold) */
+  color: var(--gold);
+  border-color: rgba(245,200,66,0.4);
+  background: rgba(245,200,66,0.06);
+}
+.dash-kpi-toggle.active:hover {
+  background: rgba(245,200,66,0.10);
+}
+
+.dash-kpi-sub {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  color: var(--muted);
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+.dash-kpi-divider {
+  width: 48px;
+  height: 1px;
+  background: var(--border);
+  margin: 18px 0 20px;
+  flex-shrink: 0;
+}
+.dash-kpi-chart {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+}
+.dash-kpi-chart svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* ── Legacy small stat cards (kept for future rows) ── */
+.dash-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 14px; margin-bottom: 14px; flex-shrink: 0;
+}
+.dash-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 4px; padding: 14px 18px;
+  position: relative; overflow: hidden;
+}
+.dash-card::after {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--jedi), transparent);
+  opacity: .4;
+}
+.dash-card-label {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px; letter-spacing: 2.5px; color: var(--muted);
+  text-transform: uppercase; margin-bottom: 8px;
+}
+.dash-card-value {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 32px; font-weight: 900;
+  color: var(--gold); line-height: 1; margin-bottom: 4px;
+  text-shadow: 0 0 20px rgba(245,200,66,0.4);
+}
+.dash-card-note {
+  font-size: 13px; color: var(--muted); font-weight: 400;
+}
+
+.dash-chart-row {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 14px; flex-shrink: 0;
+}
+.dash-chart-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 4px; padding: 14px 18px;
+}
+.dash-chart-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 13px; color: #fff; margin-bottom: 12px; letter-spacing: 1px;
+}
+#bar-svg, #region-svg, #heatmap-svg { width: 100%; display: block; }
+
+/* ── TOOLTIP ── */
+#tooltip {
+  position: fixed; z-index: 9000;
+  background: rgba(4,8,24,0.97);
+  border: 1px solid var(--gold); border-radius: 3px;
+  padding: 14px 18px; pointer-events: none;
+  opacity: 0; transition: opacity .15s;
+  width: 340px;
+  box-shadow: 0 0 24px rgba(245,200,66,0.18);
+}
+#tooltip .tt-planet {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 15px; color: var(--gold); margin-bottom: 3px;
+}
+#tooltip .tt-region {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px; color: var(--muted); letter-spacing: 2px;
+  text-transform: uppercase; margin-bottom: 10px;
+}
+#tooltip .tt-divider {
+  height: 1px; background: var(--border); margin: 8px 0;
+}
+#tooltip .tt-row {
+  display: flex; gap: 6px; margin-bottom: 5px;
+}
+#tooltip .tt-label {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px; letter-spacing: 1.5px; color: var(--muted);
+  text-transform: uppercase; flex-shrink: 0; padding-top: 2px; min-width: 80px;
+}
+#tooltip .tt-value {
+  font-size: 12px; color: var(--text); line-height: 1.5;
+}
+#tooltip .tt-chars { font-size: 13px; color: var(--text); line-height: 1.5; }
+#tooltip .tt-beat-char {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11px; color: var(--jedi); margin-bottom: 4px;
+}
+#tooltip .tt-beat-desc {
+  font-size: 12px; color: var(--text); line-height: 1.55;
+}
+
+/* ── CREDITS ── */
+#credits { padding-bottom: 20px; }
+
+.credits-layout {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 48px;
+  margin: auto 0;   /* vertically centres the whole row in the section flex column */
+  align-items: center;
+}
+.credits-img {
+  display: block;
+  /* fill from top of content area down to 20 px from viewport edge:
+     section top-pad 40 + header ~85 + gap ~8 = ~133 px consumed above image */
+  max-height: calc((100svh - 153px) * 0.7);
+  width: auto;
+}
+.credits-content-col {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 32px;
+}
+.credits-story {
+  color: var(--text);
+  font-size: 15px;
+  line-height: 1.8;
+  font-weight: 400;
+}
+.credits-story strong {
+  color: #fff;
+  font-weight: 600;
+}
+.credits-story a {
+  color: var(--gold);
+  font-weight: 700;
+  text-decoration: none;
+  transition: text-shadow .2s;
+}
+.credits-story a:hover {
+  text-shadow: 0 0 10px rgba(245,200,66,0.9), 0 0 22px rgba(245,200,66,0.4);
+}
+.credits-btns {
+  display: flex;
+  gap: 14px;
+  flex-shrink: 0;
+}
+
+/* ── FOOTER ── */
+footer {
+  position: relative; z-index: 1;
+  text-align: center; padding: 40px 32px;
+  border-top: 1px solid var(--border);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 12px; letter-spacing: 2px; color: var(--muted);
+}
+
+/* ── FOCUS STATES (WCAG 2.2 AAA) ── */
+:focus-visible {
+  outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 2px;
+}
+.story-beat:focus-visible {
+  outline: 2px solid var(--jedi); outline-offset: -2px;
+}
+
+/* ── REDUCED MOTION ── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .scroll-hint { animation: none; opacity: 0.7; }
+  .pulse-ring  { animation: none !important; }
+}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+@media (max-width: 1100px) {
+  .follow-layout { grid-template-columns: 1fr 360px; }
+}
+@media (max-width: 1100px) {
+  .dash-row1       { grid-template-columns: 1fr; }
+  .dash-kpi-card   { min-height: 400px; }
+}
+@media (max-width: 860px) {
+  .follow-layout { grid-template-columns: 1fr; }
+  .story-panel { min-height: 260px; }
+  .story-beat-area { border-left: none; border-top: 1px solid var(--border); }
+  .dash-chart-row { grid-template-columns: 1fr; }
+  section { padding: 76px 16px 12px; }
+  .follow-layout { gap: 12px; }
+  #follow .section-sub { white-space: normal; }
+  .dash-kpi-value { font-size: 28px; }
+}

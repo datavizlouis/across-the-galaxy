@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Star Wars · Across the Galaxy</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Rajdhani:wght@300;400;600&display=swap" rel="stylesheet">
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<canvas id="starfield"></canvas>
+
+<div id="tooltip" aria-hidden="true" role="tooltip">
+  <div class="tt-planet"></div>
+  <div class="tt-region"></div>
+  <div class="tt-chars"></div>
+</div>
+
+<!-- HERO -->
+<div id="hero">
+  <div class="hero-eyebrow">Episodes I – IX · 14 Characters · 27 Worlds</div>
+  <h1 class="hero-title">ACROSS THE<br><span>GALAXY</span></h1>
+  <p class="hero-sub">
+    An animated atlas of every step taken across the Star Wars saga —
+    from Tatooine to Exegol, from The Phantom Menace to The Rise of Skywalker.
+  </p>
+  <div class="hero-cta">
+    <a href="#follow"    class="btn btn-ghost">By Character</a>
+    <a href="#journeys"  class="btn btn-ghost">By Movie</a>
+    <a href="#dashboard" class="btn btn-ghost">Fun Facts</a>
+    <a href="#credits"   class="btn btn-ghost">Credits</a>
+  </div>
+  <div class="scroll-hint" aria-hidden="true">
+    scroll
+    <svg width="10" height="14" viewBox="0 0 10 14" fill="none" aria-hidden="true">
+      <line x1="5" y1="1" x2="5" y2="11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      <polyline points="1,8 5,12 9,8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </svg>
+  </div>
+</div>
+
+<!-- SECTION 1: FOLLOW -->
+<section id="follow">
+  <div class="section-header">
+    <div>
+      <div class="section-label">Section 01 / Follow a Character</div>
+      <h2 class="section-title">Their Journey Across the Galaxy</h2>
+    </div>
+    <div class="section-nav">
+      <a href="#hero" class="btn btn-ghost sec-btn" aria-label="Back to the start" data-label="Back to the start">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+          <polyline points="2,9 7,4 12,9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </a>
+      <a href="#journeys" class="btn btn-ghost sec-btn" aria-label="Journey by the movies" data-label="By the movies">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+          <polyline points="2,5 7,10 12,5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </a>
+    </div>
+  </div>
+  <p class="section-sub">Select a character to trace their path and scroll up/down to navigate through the story beats. You can also hover over a planet for more information.</p>
+
+  <!-- Spacer preserves the height the old char-selector occupied -->
+  <div class="char-selector-spacer"></div>
+
+  <div class="follow-layout">
+    <div id="follow-map-wrap">
+      <svg id="follow-svg" viewBox="0 0 800 520" role="img" aria-label="Galactic map showing selected character journey"></svg>
+    </div>
+    <div class="story-panel" id="story-panel" aria-label="Story beats timeline">
+      <!-- Character grid pinned to top of panel -->
+      <div class="char-selector" id="char-selector" role="group" aria-label="Select a character"></div>
+      <!-- Beat viewport — JS-driven paging lives here -->
+      <div class="story-beat-area" id="story-beat-area" role="list" tabindex="0"></div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 2: ALL JOURNEYS -->
+<section id="journeys">
+  <div class="section-header">
+    <div>
+      <div class="section-label">Section 02 / The Galaxy Beyond</div>
+      <h2 class="section-title">How the story unfolds</h2>
+    </div>
+    <div class="section-nav">
+      <a href="#follow" class="btn btn-ghost sec-btn" aria-label="By characters" data-label="By characters">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+          <polyline points="2,9 7,4 12,9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </a>
+      <a href="#dashboard" class="btn btn-ghost sec-btn" aria-label="Fun Facts" data-label="Fun Facts">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+          <polyline points="2,5 7,10 12,5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </a>
+    </div>
+  </div>
+  <p class="section-sub">Select an episode to trace every path and scroll up/down to navigate through the story beats. You can also hover over a planet for more information.</p>
+
+  <div class="journeys-layout">
+    <div id="journeys-map-wrap">
+      <svg id="journeys-svg" viewBox="0 0 800 520" role="img" aria-label="Galactic map showing episode journey paths"></svg>
+    </div>
+    <div class="story-panel" id="journeys-story-panel" aria-label="Episode beats timeline">
+      <div class="char-selector" id="ep-selector" role="group" aria-label="Select an episode"></div>
+      <div class="story-beat-area" id="journeys-beat-area" role="list" tabindex="0"></div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 3: DASHBOARD -->
+<section id="dashboard">
+  <div class="section-header">
+    <div>
+      <div class="section-label">Section 03 / Dashboard</div>
+      <h2 class="section-title">Galactic Intelligence</h2>
+    </div>
+    <div class="section-nav">
+      <a href="#journeys" class="btn btn-ghost sec-btn" aria-label="By movies" data-label="By movies">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+          <polyline points="2,9 7,4 12,9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </a>
+      <a href="#credits" class="btn btn-ghost sec-btn" aria-label="Roll the credits" data-label="Roll the credits">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+          <polyline points="2,5 7,10 12,5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </a>
+    </div>
+  </div>
+  <p class="section-sub">Key insights distilled from 14 character journeys across 27 canonical worlds.</p>
+
+  <!-- Snap scroll canvas — snaps between Row 1 and Row 2 -->
+  <div class="dash-scroll">
+
+    <!-- SNAP PAGE 1: Most Visited World + Most Populated World -->
+    <div class="dash-snap-page">
+      <div class="dash-page-header">Page 1 of 2 — scroll down for facts about characters</div>
+      <div class="dash-row1">
+
+        <!-- KPI 1: Most Visited World -->
+        <div class="dash-kpi-card">
+          <div class="dash-kpi-label">Most Visited World</div>
+          <div class="dash-kpi-value-row">
+            <div class="dash-kpi-value" id="kpi-mvw-name">—</div>
+            <div class="dash-kpi-pill">Bubble Size = Visit Count</div>
+          </div>
+          <div class="dash-kpi-sub" id="kpi-mvw-sub">—</div>
+          <div class="dash-kpi-divider"></div>
+          <div class="dash-kpi-chart">
+            <svg id="bubble-svg"
+                 viewBox="0 0 700 700"
+                 preserveAspectRatio="xMidYMid meet"
+                 role="img"
+                 aria-label="Bubble map of planet visit frequency"></svg>
+          </div>
+        </div>
+
+        <!-- KPI 2: Most Populated World -->
+        <div class="dash-kpi-card">
+          <div class="dash-kpi-label">Most Populated World</div>
+          <div class="dash-kpi-value-row">
+            <div class="dash-kpi-value" id="kpi-pop-name">—</div>
+            <div class="dash-kpi-pill">Bubble Size = Population</div>
+          </div>
+          <div class="dash-kpi-toggle-row">
+            <button id="toggle-coruscant" class="dash-kpi-toggle">Hide Outliers</button>
+          </div>
+          <div class="dash-kpi-sub" id="kpi-pop-sub">—</div>
+          <div class="dash-kpi-divider"></div>
+          <div class="dash-kpi-chart">
+            <svg id="pop-svg"
+                 viewBox="0 0 700 700"
+                 preserveAspectRatio="xMidYMid meet"
+                 role="img"
+                 aria-label="Bubble map of planet sentient population"></svg>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /snap page 1 -->
+
+    <!-- SNAP PAGE 2: Most Travelled Character + Distance Travelled -->
+    <div class="dash-snap-page">
+      <div class="dash-page-header">Page 2 of 2 — scroll up for facts about planets</div>
+      <div class="dash-row1">
+
+        <!-- KPI 3: Most Travelled Character -->
+        <div class="dash-kpi-card">
+          <div class="dash-kpi-label">Most Travelled Character</div>
+          <div class="dash-kpi-value-row">
+            <div class="dash-kpi-value" id="kpi-mtc-name">—</div>
+            <div class="dash-kpi-pill">Planets A → Z</div>
+          </div>
+          <div class="dash-kpi-sub" id="kpi-mtc-sub">—</div>
+          <div class="dash-kpi-divider"></div>
+          <div class="dash-kpi-chart">
+            <svg id="char-travel-svg"
+                 viewBox="0 0 580 560"
+                 preserveAspectRatio="xMidYMid meet"
+                 role="img"
+                 aria-label="Character planet visits sorted by unique count"></svg>
+          </div>
+        </div>
+
+        <!-- KPI 4: Distance Travelled -->
+        <div class="dash-kpi-card">
+          <div class="dash-kpi-label">Distance Travelled</div>
+          <div class="dash-kpi-value-row">
+            <div class="dash-kpi-value" id="kpi-dist-name">—</div>
+            <div class="dash-kpi-pill">In Light-Years</div>
+          </div>
+          <div class="dash-kpi-sub" id="kpi-dist-sub">—</div>
+          <div class="dash-kpi-divider"></div>
+          <div class="dash-kpi-chart">
+            <svg id="dist-svg"
+                 viewBox="0 0 580 560"
+                 preserveAspectRatio="xMidYMid meet"
+                 role="img"
+                 aria-label="Dot plot of distance travelled by character in light-years"></svg>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /snap page 2 -->
+
+  </div><!-- /dash-scroll -->
+</section>
+
+<!-- SECTION 4: CREDITS -->
+<section id="credits">
+  <div class="section-header">
+    <div>
+      <div class="section-label">Section 04 / Credits</div>
+      <h2 class="section-title">Credits &amp; Acknowledgements</h2>
+    </div>
+    <div class="section-nav">
+      <a href="#dashboard" class="btn btn-ghost sec-btn" aria-label="Fun Facts" data-label="Fun Facts">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+          <polyline points="2,9 7,4 12,9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </a>
+      <a href="#hero" class="btn btn-ghost sec-btn" aria-label="Back to the start" data-label="Back to the start">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+          <polyline points="2,5 7,10 12,5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </a>
+    </div>
+  </div>
+
+  <div class="credits-layout">
+
+    <!-- Left column: photo -->
+    <div class="credits-image-col">
+      <img class="credits-img" src="assets/louis_lightsaber.webp" alt="Louis with a lightsaber">
+    </div>
+
+    <!-- Right column: story + buttons -->
+    <div class="credits-content-col">
+      <p class="credits-story">
+		<a href="https://datavizlouis.webflow.io/" target="_blank">Hi, I'm Louis!</a>
+		<br><br>
+        <strong>The Inspiration</strong><br>
+		A few months ago, I chanced upon the official <a href="https://www.starwars.com/star-wars-galaxy-map" target="_blank">Star Wars Galaxy Map</a> (Thanks to my buddy <a href="https://kevinwee.com/" target="_blank">Kevin Wee</a>) that was created to complement the 2009 book Star Wars: The Essential Atlas. Being a huge fan of the franchise, this was very exciting to see how much depth and lore the story was built upon. I wanted to share my excitement, but over 6,000 planets is a bit much to explain to someone new isn't it? I think I say this for every dataviz nerd, but we get so much satisfaction from being able to simplify data for non-data folks.
+		<br><br>
+		<strong>The Idea</strong><br>
+		I landed on an idea to visualize the planetary travel for each character, but obviously that would be a crazy endeavor. So I wanted to test this out with AI. I started off asking ChatGPT to do deep research on the topic, feeding it context like the official <a href="https://www.starwars.com/databank" target="_blank">Star Wars databank</a> and <a href="https://starwars.fandom.com/wiki/Main_Page" target="_blank">Wookieepedia</a>. The initial D3 visualizations it came out with was pretty lackluster, but it had the right idea of showing travel through animated lines. I didn't get too far with ChatGPT because it kept breaking the animations as I tried to add more design to it, so I migrated to Claude.
+		<br><br>
+		<strong>A coding partner</strong><br>
+		To be completely honest, I'm still a novice in D3 but I understand CSS and code structures. Having Claude as my dedicated coding sidekick as I prompted through requests from like adding particles, fog system, cinematic camera control to page snap scrolling... was liberating. However, I relied heavily on my design and UXUI knowledge, often questioning and correcting course when Claude tries to do something weird. It's definitely not 100% accurate nor my best work, but it's a close replication of what I had in mind. And the best part? I didn't have to scrap any data either. But it did take burning through maybe ~$50 worth of Claude tokens due to the verbose nature of the franchise 😅
+      </p>
+
+      <div class="credits-btns">
+        <a href="https://github.com/datavizlouis/across-the-galaxy" target="_blank" class="btn btn-primary">Visit the Codebase</a>
+        <a href="#" class="btn btn-primary">Download the Dataset</a>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- D3 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+
+<!-- Data (must load before any JS that references PLANETS / JOURNEYS) -->
+<script src="data/sw-data.js"></script>
+<script src="data/images.js"></script>
+
+<!-- Utilities (must load before section scripts) -->
+<script src="js/helpers.js"></script>
+
+<!-- Starfield (independent) -->
+<script src="js/starfield.js"></script>
+
+<!-- Sections (in DOM order) -->
+<script src="js/follow.js"></script>
+<script src="js/journeys.js"></script>
+<script src="js/dashboard.js"></script>
+
+
+</body>
+</html>
