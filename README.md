@@ -2,7 +2,7 @@
 
 An animated, interactive atlas of every journey taken across the Star Wars saga — Episodes I through IX, 14 characters, 27 canonical worlds.
 
-**Live site:** [Deployed on Vercel](https://your-deployment-url.vercel.app) *(update after deploying)*
+**Live site:** [Deployed on Vercel](https://across-the-galaxy.vercel.app/)
 
 ---
 
