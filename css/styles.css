@@ -973,6 +973,7 @@ footer {
   .char-selector { display: none; }
 
   .mobile-selector-wrap {
+    display: block;
     flex-shrink: 0;
     padding: 0 0 6px;
   }
