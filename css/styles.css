@@ -1112,4 +1112,16 @@ footer {
       text-shadow: 0 0 12px rgba(74, 158, 255, 0.9), 0 0 28px rgba(74, 158, 255, 0.4);
     }
   }
+
+  /* ── Disable CSS snap on mobile — JS handles section navigation ── */
+  html    { scroll-snap-type: none; }
+  #hero, section { scroll-snap-align: none; scroll-snap-stop: normal; }
+
+  /* ── Section 3: free-scroll (expands to natural height) ── */
+  #dashboard      { height: auto; overflow: visible; }
+  .dash-scroll    { overflow-y: visible; flex: none; min-height: 0; }
+  .dash-snap-page { height: auto; overflow: visible; }
+
+  /* ── Section 4: auto-height ── */
+  #credits { height: auto; }
 }
