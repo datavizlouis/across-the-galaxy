@@ -868,6 +868,9 @@ if (window.innerWidth <= 768) {
       activeBeat = next;
       renderFollowMap(activeBeat, journey[activeBeat].planet !== journey[prev].planet);
       updatePanelActive();
+    } else {
+      // Boundary: navigate to prev/next character, or exit section
+      if (dir > 0) nextChar(); else prevChar();
     }
   }, { passive: true });
 }
