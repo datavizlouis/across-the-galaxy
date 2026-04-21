@@ -9,12 +9,15 @@ An animated, interactive atlas of every journey taken across the Star Wars saga 
 ## What This Is
 
 **The Inspiration**
+
 A few months ago, I chanced upon the official Star Wars Galaxy Map (Thanks to my buddy Kevin Wee) that was created to complement the 2009 book Star Wars: The Essential Atlas. Being a huge fan of the franchise, this was very exciting to see how much depth and lore the story was built upon. I wanted to share my excitement, but over 6,000 planets is a bit much to explain to someone new isn't it? I think I say this for every dataviz nerd, but we get so much satisfaction from being able to simplify data for non-data folks.
 
 **The Idea**
+
 I landed on an idea to visualize the planetary travel for each character, but obviously that would be a crazy endeavor. So I wanted to test this out with AI. I started off asking ChatGPT to do deep research on the topic, feeding it context like the official Star Wars databank and Wookieepedia. The initial D3 visualizations it came out with was pretty lackluster, but it had the right idea of showing travel through animated lines. I didn't get too far with ChatGPT because it kept breaking the animations as I tried to add more design to it, so I migrated to Claude.
 
 **A coding partner**
+
 To be completely honest, I'm still a novice in D3 but I understand CSS and code structures. Having Claude as my dedicated coding sidekick as I prompted through requests from like adding particles, fog system, cinematic camera control to page snap scrolling... was liberating. However, I relied heavily on my design and UXUI knowledge, often questioning and correcting course when Claude tries to do something weird. It's definitely not 100% accurate nor my best work, but it's a close replication of what I had in mind. And the best part? I didn't have to scrap any data either. But it did take burning through maybe ~$50 worth of Claude tokens due to the verbose nature of the franchise 😅
 
 ---
@@ -109,7 +112,7 @@ Distances are calculated from planet `(x, y)` coordinates using Euclidean distan
 
 ## Sections
 
-### Hero
+### Start Page
 
 Full-viewport landing with an animated starfield canvas, and navigation links to each section. The starfield uses a seeded random distribution of stars across three depth layers (foreground, mid, background) that drift at different speeds to create a parallax effect. The page uses **CSS scroll-snap** at the `html` level with `scroll-snap-type: y mandatory`, locking each section to the full viewport height on scroll.
 
@@ -123,13 +126,6 @@ A D3.js galaxy map on the left shows all 27 planets as nodes. Selecting a charac
 
 On the right, a scrollable story panel shows the selected character's beats as cards — each card contains the episode, the planet name, a one-line summary, and an expandable narrative description. The panel and the map are kept in sync: scrolling through beats highlights the current planet on the map.
 
-**Key decisions:**
-- **Character grid is pinned** to the top of the story panel so it's always visible regardless of scroll position.
-- **Beat cards page vertically** rather than scroll continuously — each beat occupies the full panel height, making it feel more like turning pages than scrolling a list.
-- **Beat image overlay** shows the character's name in large type, giving each card a cinematic header without requiring images for every planet.
-- **Path animation is per-segment** — each leg of the journey animates in sequence rather than all at once, so you can follow the route visually.
-- **Dimmed planets** — planets not in the selected character's journey are shown at low opacity, keeping the map readable without removing context.
-
 ---
 
 ### Section 2 — How the Story Unfolds (By Episode)
@@ -137,12 +133,6 @@ On the right, a scrollable story panel shows the selected character's beats as c
 **The question:** What does the full picture of one film's character movements look like?
 
 Structurally identical to Section 1 but pivoted to episodes rather than characters. Selecting an episode draws all the paths for all characters who appear in that film simultaneously, colour-coded by character. The story panel shows beats in narrative order across all characters for that episode.
-
-**Key decisions:**
-- **All paths drawn at once** for the selected episode, using each character's `CHAR_COLORS` colour. This creates a dense web of lines that visually conveys how interconnected the saga's geography is within a single film.
-- **Beat image overlay** shows the film title (e.g. `THE PHANTOM MENACE`) rather than a planet name, grounding each card in the episode context.
-- **Episode selector** uses roman numerals (I–IX) for immediate recognisability.
-- **Section subtitle forced to one line** — whitespace-nowrap prevents the sub-heading from wrapping awkwardly at mid-range viewport widths.
 
 ---
 
@@ -164,7 +154,6 @@ A two-page snap-scroll dashboard with four KPI cards, two per page. The section 
 
 **Distance Travelled** — A dot plot where each row is a character, dots mark each planet stop along their journey, and the x-axis encodes cumulative distance in light-years. The rightmost dot has a ship icon. Characters are sorted by the same metric as the Most Travelled chart (unique worlds visited) so the two charts can be compared row-for-row. Tooltips show the exact full light-year distance at each stop.
 
-
 ---
 
 ## Tech Stack
@@ -176,7 +165,6 @@ A two-page snap-scroll dashboard with four KPI cards, two per page. The section 
 - **Vercel** — static hosting via GitHub integration
 
 ---
-
 
 ## Dataset
 
