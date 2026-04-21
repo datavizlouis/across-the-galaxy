@@ -79,3 +79,35 @@ function drawPlanets(g, svg, highlightNames) {
     pg.append('title').text(`${p.name} · ${p.region}`);
   });
 }
+
+// Desktop: wheel-lock all sections (nav buttons only for section changes)
+if (window.innerWidth > 768) {
+  // Hero: block all wheel scroll
+  const heroEl = document.getElementById('hero');
+  if (heroEl) heroEl.addEventListener('wheel', e => e.preventDefault(), { passive: false });
+
+  // Dashboard: block outer scroll, allow internal dash-scroll snap with cooldown
+  const dashEl = document.getElementById('dashboard');
+  if (dashEl) {
+    let dashScrolling = false;
+    dashEl.addEventListener('wheel', e => {
+      e.preventDefault();
+      if (dashScrolling) return;
+      const ds = e.target.closest('.dash-scroll');
+      if (ds) {
+        const pageH = ds.clientHeight;
+        const cur   = Math.round(ds.scrollTop / pageH);
+        const next  = Math.max(0, Math.min(ds.children.length - 1, cur + (e.deltaY > 0 ? 1 : -1)));
+        if (next !== cur) {
+          dashScrolling = true;
+          ds.scrollTo({ top: next * pageH, behavior: 'smooth' });
+          setTimeout(() => { dashScrolling = false; }, 650);
+        }
+      }
+    }, { passive: false });
+  }
+
+  // Credits: block all wheel scroll
+  const creditsEl = document.getElementById('credits');
+  if (creditsEl) creditsEl.addEventListener('wheel', e => e.preventDefault(), { passive: false });
+}

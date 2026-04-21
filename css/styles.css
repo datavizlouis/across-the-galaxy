@@ -874,6 +874,7 @@ footer {
 .mobile-disclaimer    { display: none; }
 .dash-kpi-top5-pill   { display: none; }
 .mobile-selector-wrap { display: none; }
+.scroll-hint          { display: none; }
 
 /* ── MOBILE (≤ 768px) ────────────────────────────────────────────────────── */
 @media (max-width: 768px) {
@@ -1117,11 +1118,10 @@ footer {
   html    { scroll-snap-type: none; }
   #hero, section { scroll-snap-align: none; scroll-snap-stop: normal; }
 
-  /* ── Section 3: free-scroll (expands to natural height) ── */
-  #dashboard      { height: auto; overflow: visible; }
-  .dash-scroll    { overflow-y: visible; flex: none; min-height: 0; }
+  /* ── Sections 3 & 4: locked to viewport, scroll freely within ── */
+  #dashboard   { height: 100svh; overflow: hidden; }
+  .dash-scroll { overflow-y: auto; flex: 1; min-height: 0; overscroll-behavior-y: contain; }
   .dash-snap-page { height: auto; overflow: visible; }
 
-  /* ── Section 4: auto-height ── */
-  #credits { height: auto; }
+  #credits { height: 100svh; overflow-y: auto; overscroll-behavior-y: contain; }
 }

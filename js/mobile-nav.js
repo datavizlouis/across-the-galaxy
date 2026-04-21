@@ -1,8 +1,8 @@
-/* Mobile navigation: scroll-lock for sections 1 & 2, free-scroll for sections 3+ */
+/* Mobile navigation: scroll-lock for all sections, internal scroll allowed in 3 & 4 */
 (function () {
   if (window.innerWidth > 768) return;
 
-  const LOCK = ['follow', 'journeys']
+  const LOCK = ['hero', 'follow', 'journeys', 'dashboard', 'credits']
     .map(id => document.getElementById(id))
     .filter(Boolean);
 
@@ -10,7 +10,11 @@
   let snapTimer = null;
 
   /* ── scroll prevention ─────────────────────────────────────────── */
-  function noop(e) { e.preventDefault(); }
+  function noop(e) {
+    /* Allow native scroll inside sections 3 & 4 scroll containers */
+    if (e.target.closest('.dash-scroll, #credits')) return;
+    e.preventDefault();
+  }
 
   function lock() {
     if (locked) return;

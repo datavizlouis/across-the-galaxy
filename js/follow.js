@@ -569,7 +569,7 @@ function updateBeatHint() {
   const isLastBeat = activeBeat === journey.length - 1;
 
   if (activeChar === 'C-3PO' && isLastBeat) {
-    hint.textContent = 'Scroll down to explore the whole galaxy...';
+    hint.textContent = 'Click ↓ to explore the whole galaxy...';
   } else if (isLastBeat) {
     const idx      = CHAR_LIST.indexOf(activeChar);
     const nextName = CHAR_LIST[idx + 1];
@@ -769,13 +769,15 @@ document.getElementById('follow').addEventListener('wheel', function(e) {
       if (activeBeat < journey.length - 1) {
         jumpToBeat(activeBeat + 1, true);
       } else {
-        nextChar(); return;
+        const idx = CHAR_LIST.indexOf(activeChar);
+        if (idx < CHAR_LIST.length - 1) { nextChar(); return; }
       }
     } else {
       if (activeBeat > 0) {
         jumpToBeat(activeBeat - 1, false);
       } else {
-        prevChar(); return;
+        const idx = CHAR_LIST.indexOf(activeChar);
+        if (idx > 0) { prevChar(); return; }
       }
     }
     scrollCooldown = true;
@@ -802,9 +804,11 @@ document.getElementById('follow').addEventListener('wheel', function(e) {
     scrollCooldown = true;
     setTimeout(() => { scrollCooldown = false; }, 350);
   } else if (e.deltaY > 0) {
-    nextChar();   // past last beat → next character (or Journeys section)
+    const idx = CHAR_LIST.indexOf(activeChar);
+    if (idx < CHAR_LIST.length - 1) nextChar();
   } else if (e.deltaY < 0) {
-    prevChar();   // before first beat → previous character (or hero section)
+    const idx = CHAR_LIST.indexOf(activeChar);
+    if (idx > 0) prevChar();
   }
 }, { passive: false });
 

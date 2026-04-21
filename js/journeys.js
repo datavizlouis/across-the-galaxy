@@ -480,7 +480,7 @@ function updateJourneysBeatHint() {
   const beats  = EPISODE_BEATS[activeEp];
   const isLast = activeEpBeat === beats.length - 1;
   if (activeEp === 'IX' && isLast) {
-    hint.textContent = 'The saga is complete — scroll down to explore insights...';
+    hint.textContent = 'The saga is complete — click ↓ to explore insights...';
   } else if (isLast) {
     const nextEp = EP_LIST[EP_LIST.indexOf(activeEp) + 1];
     hint.textContent = `Scroll down to continue with Episode ${nextEp}...`;
@@ -684,7 +684,12 @@ document.getElementById('journeys').addEventListener('wheel', function (e) {
     jScrollLock = true;
     setTimeout(() => { jScrollLock = false; }, dir > 0 ? 650 : 380);
   } else {
-    jCrossBoundary(dir);
+    const epIdx = EP_LIST.indexOf(activeEp);
+    if ((dir > 0 && epIdx < EP_LIST.length - 1) ||
+        (dir < 0 && epIdx > 0)) {
+      jCrossBoundary(dir);
+    }
+    // At section boundary: do nothing — use nav buttons
   }
 }, { passive: false });
 
