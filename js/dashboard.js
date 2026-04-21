@@ -119,6 +119,10 @@ document.getElementById('kpi-mtc-sub').textContent  =
     .domain([0, maxV])
     .interpolator(d3.interpolateRgbBasis(['#0c1e40', '#1466c4', '#00d4ff', '#f5c842']));
 
+  // On mobile, only draw bubbles for the top-5 visited planets
+  const MOBILE = window.innerWidth <= 768;
+  const top5NamesVisit = new Set(sorted.slice(0, 10).map(([n]) => n));
+
   // Draw low-visit planets first so high-visit render on top
   const drawOrder = [...PLANETS].sort((a, b) =>
     (visitCounts[a.name] || 0) - (visitCounts[b.name] || 0)
@@ -130,7 +134,7 @@ document.getElementById('kpi-mtc-sub').textContent  =
     const r   = rScale(visits);
     const col = colorScale(visits);
 
-    if (visits === 0) {
+    if (visits === 0 || (MOBILE && !top5NamesVisit.has(p.name))) {
       gZoom.append('circle')
         .attr('cx', px).attr('cy', py).attr('r', 2.5)
         .attr('fill', '#1a2a4a').attr('opacity', 0.4);
@@ -158,17 +162,18 @@ document.getElementById('kpi-mtc-sub').textContent  =
       .attr('opacity', 0.9)
       .attr('filter', isTop5 ? 'url(#bubble-glow)' : null);
 
-    // Visit count inside bubble
+    // Visit count inside bubble (doubled on mobile to stay readable)
     const fontSize = r >= 18 ? 13 : r >= 12 ? 11 : 9;
+    const renderFontSize = MOBILE ? fontSize * 2 : fontSize;
     g.append('text')
-      .attr('text-anchor', 'middle').attr('dy', fontSize * 0.38)
+      .attr('text-anchor', 'middle').attr('dy', renderFontSize * 0.38)
       .attr('font-family', 'Orbitron, sans-serif')
-      .attr('font-size', `${fontSize}px`).attr('font-weight', '900')
+      .attr('font-size', `${renderFontSize}px`).attr('font-weight', '900')
       .attr('fill', visits >= 10 ? '#f5c842' : '#00d4ff')
       .attr('pointer-events', 'none').text(visits);
 
     // Planet name above bubble
-    const nameFontSize = visits >= 12 ? 10 : 9;
+    const nameFontSize = MOBILE ? 20 : (visits >= 12 ? 10 : 9);
     g.append('text')
       .attr('text-anchor', 'middle').attr('y', -(r + 7))
       .attr('font-family', 'Share Tech Mono, monospace')
@@ -206,16 +211,19 @@ document.getElementById('kpi-mtc-sub').textContent  =
 // ═══════════════════════════════════════════════════════════════════════════
 
 (function buildCharTravelChart() {
+  const MOBILE  = window.innerWidth <= 768;
   const CW = 580, CH = 560;
-  const CP = { t: 10, r: 10, b: 10, l: 104 };
-  const innerW  = CW - CP.l - CP.r;          // 466 px
+  const CP = { t: 10, r: 10, b: 10, l: MOBILE ? 165 : 104 };
+  const innerW  = CW - CP.l - CP.r;          // 405 mobile / 466 desktop
   const innerH  = CH - CP.t - CP.b;          // 540 px
-  const nChars  = charTravelData.length;     // 14
 
-  // Sort by unique count descending for this chart
-  const renderData = [...charTravelData].sort((a, b) => b.unique.length - a.unique.length);
+  // Sort by unique count descending; top 5 only on mobile
+  const renderData = [...charTravelData]
+    .sort((a, b) => b.unique.length - a.unique.length)
+    .slice(0, MOBILE ? 10 : Infinity);
 
-  const bw      = innerH / nChars;           // ~38.6 px per row
+  const nChars  = renderData.length;
+  const bw      = innerH / nChars;           // ~38.6 desktop / ~108 mobile
   // Size squares to fit the max unique count (16) within innerW
   const maxUniq = renderData[0].unique.length;   // 16
   const sqStep  = Math.floor(innerW / maxUniq);  // 29 px
@@ -229,59 +237,108 @@ document.getElementById('kpi-mtc-sub').textContent  =
 
   const svg = d3.select('#char-travel-svg');
 
-  // ── Rows ───────────────────────────────────────────────────────────────────
-  renderData.forEach((d, i) => {
-    const rowY     = CP.t + i * bw;
-    const rowColor = d.char === TOP_CHAR ? GOLD : BLUE;
-    const uniqueSorted = [...d.unique].sort();   // A → Z planet order
+  if (MOBILE) {
+    // ── Mobile: proportional horizontal bar chart ────────────────────────
+    renderData.forEach((d, i) => {
+      const rowY     = CP.t + i * bw;
+      const rowColor = d.char === TOP_CHAR ? GOLD : BLUE;
+      const barWidth = Math.round((d.unique.length / maxUniq) * innerW);
+      const barH     = Math.round(bw * 0.44);
+      const barY     = rowY + Math.round((bw - barH) / 2);
 
-    const rg = svg.append('g').attr('class', 'char-row');
+      const rg = svg.append('g').attr('class', 'char-row');
 
-    // ── Planet squares ────────────────────────────────────────────────────
-    uniqueSorted.forEach((planet, pi) => {
-      const pl = planetIndex[planet];
+      // Track (full-width background)
       rg.append('rect')
-        .attr('x', CP.l + pi * sqStep + 1)
-        .attr('y', rowY + sqVOff + 1)
-        .attr('width',  sqSize - 2)
-        .attr('height', sqSize - 2)
-        .attr('fill',   rowColor)
-        .attr('opacity', d.char === TOP_CHAR ? 0.82 : 0.50)
-        .attr('rx', 2)
-        .on('mouseover', function(evt) {
-          dashTipShow(evt, `
-            <div class="tt-planet">${planet.toUpperCase()}</div>
-            <div class="tt-region">${(pl?.region || '').toUpperCase()}</div>
-            <div class="tt-divider"></div>
-            <div style="font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:1.5px;color:#8099b8;margin-bottom:3px">CHARACTER</div>
-            <div style="font-family:'Orbitron',sans-serif;font-size:20px;font-weight:900;color:${rowColor};line-height:1;margin-bottom:8px">${d.char.toUpperCase()}</div>
-            <div style="font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:1.5px;color:#8099b8;margin-bottom:3px">GEOGRAPHY</div>
-            <div style="font-size:12px;color:#8099b8;line-height:1.5">${(pl?.geography || '').slice(0, 150)}${(pl?.geography || '').length > 150 ? '…' : ''}</div>`);
-        })
-        .on('mousemove', dashTipMove)
-        .on('mouseout',  dashTipHide);
+        .attr('x', CP.l).attr('y', barY)
+        .attr('width', innerW).attr('height', barH)
+        .attr('fill', '#0a1228').attr('rx', 3).attr('opacity', 0.45);
+
+      // Bar fill
+      rg.append('rect')
+        .attr('x', CP.l).attr('y', barY)
+        .attr('width', barWidth).attr('height', barH)
+        .attr('fill', rowColor)
+        .attr('fill-opacity', d.char === TOP_CHAR ? 0.78 : 0.42)
+        .attr('rx', 3);
+
+      // Unique count — inside bar, right-aligned
+      rg.append('text')
+        .attr('x', CP.l + barWidth - 8)
+        .attr('y', barY + barH / 2 + 8)
+        .attr('text-anchor', 'end')
+        .attr('font-family', 'Share Tech Mono, monospace')
+        .attr('font-size', '22px')
+        .attr('fill', d.char === TOP_CHAR ? '#1a1200' : '#fff')
+        .attr('opacity', 0.9)
+        .text(d.unique.length);
+
+      // Character label — left of bar
+      rg.append('text')
+        .attr('x', CP.l - 8)
+        .attr('y', rowY + bw / 2 + 10)
+        .attr('text-anchor', 'end')
+        .attr('font-family', 'Share Tech Mono, monospace')
+        .attr('font-size', '28px')
+        .attr('fill', rowColor)
+        .text(d.char);
     });
 
-    // ── Unique count right of last square ─────────────────────────────────
-    rg.append('text')
-      .attr('x', CP.l + uniqueSorted.length * sqStep + 6)
-      .attr('y', rowY + bw / 2 + 4)
-      .attr('font-family', 'Share Tech Mono, monospace')
-      .attr('font-size', '11px')
-      .attr('fill', rowColor)
-      .attr('opacity', 0.65)
-      .text(uniqueSorted.length);
+  } else {
+    // ── Desktop: planet squares ──────────────────────────────────────────
+    renderData.forEach((d, i) => {
+      const rowY     = CP.t + i * bw;
+      const rowColor = d.char === TOP_CHAR ? GOLD : BLUE;
+      const uniqueSorted = [...d.unique].sort();   // A → Z planet order
 
-    // ── Character label ───────────────────────────────────────────────────
-    rg.append('text')
-      .attr('x', CP.l - 8)
-      .attr('y', rowY + bw / 2 + 4)
-      .attr('text-anchor', 'end')
-      .attr('font-family', 'Share Tech Mono, monospace')
-      .attr('font-size', '11px')
-      .attr('fill', rowColor)
-      .text(d.char);
-  });
+      const rg = svg.append('g').attr('class', 'char-row');
+
+      // ── Planet squares ────────────────────────────────────────────────
+      uniqueSorted.forEach((planet, pi) => {
+        const pl = planetIndex[planet];
+        rg.append('rect')
+          .attr('x', CP.l + pi * sqStep + 1)
+          .attr('y', rowY + sqVOff + 1)
+          .attr('width',  sqSize - 2)
+          .attr('height', sqSize - 2)
+          .attr('fill',   rowColor)
+          .attr('opacity', d.char === TOP_CHAR ? 0.82 : 0.50)
+          .attr('rx', 2)
+          .on('mouseover', function(evt) {
+            dashTipShow(evt, `
+              <div class="tt-planet">${planet.toUpperCase()}</div>
+              <div class="tt-region">${(pl?.region || '').toUpperCase()}</div>
+              <div class="tt-divider"></div>
+              <div style="font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:1.5px;color:#8099b8;margin-bottom:3px">CHARACTER</div>
+              <div style="font-family:'Orbitron',sans-serif;font-size:20px;font-weight:900;color:${rowColor};line-height:1;margin-bottom:8px">${d.char.toUpperCase()}</div>
+              <div style="font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:1.5px;color:#8099b8;margin-bottom:3px">GEOGRAPHY</div>
+              <div style="font-size:12px;color:#8099b8;line-height:1.5">${(pl?.geography || '').slice(0, 150)}${(pl?.geography || '').length > 150 ? '…' : ''}</div>`);
+          })
+          .on('mousemove', dashTipMove)
+          .on('mouseout',  dashTipHide);
+      });
+
+      // ── Unique count right of last square ─────────────────────────────
+      rg.append('text')
+        .attr('x', CP.l + uniqueSorted.length * sqStep + 6)
+        .attr('y', rowY + bw / 2 + 4)
+        .attr('font-family', 'Share Tech Mono, monospace')
+        .attr('font-size', '11px')
+        .attr('fill', rowColor)
+        .attr('opacity', 0.65)
+        .text(uniqueSorted.length);
+
+      // ── Character label ───────────────────────────────────────────────
+      rg.append('text')
+        .attr('x', CP.l - 8)
+        .attr('y', rowY + bw / 2 + 4)
+        .attr('text-anchor', 'end')
+        .attr('font-family', 'Share Tech Mono, monospace')
+        .attr('font-size', '11px')
+        .attr('fill', rowColor)
+        .text(d.char);
+    });
+  }
 
 })();
 
@@ -351,10 +408,24 @@ function fmtPop(n) {
   if (n >= 1e5)  return (n / 1e6).toFixed(2)  + 'M';   // 100 K–999 K → "0.30M"
   return n >= 1000 ? n.toLocaleString() : String(n);
 }
+// Integer variant (no decimals) for mobile bubble labels
+function fmtPopInt(n) {
+  if (n >= 1e12) return Math.round(n / 1e12) + 'T';
+  if (n >= 1e9)  return Math.round(n / 1e9)  + 'B';
+  if (n >= 1e6)  return Math.round(n / 1e6)  + 'M';
+  if (n >= 1e5)  return Math.round(n / 1e6)  + 'M';
+  return n >= 1000 ? n.toLocaleString() : String(n);
+}
 
 function fmtLY(n) {
   if (n >= 1e6) return parseFloat((n / 1e6).toFixed(1)) + 'M';
   if (n >= 1e3) return parseFloat((n / 1e3).toFixed(1)) + 'K';
+  return Math.round(n).toString();
+}
+// Integer variant (no decimals) for mobile labels
+function fmtLYInt(n) {
+  if (n >= 1e6) return Math.round(n / 1e6) + 'M';
+  if (n >= 1e3) return Math.round(n / 1e3) + 'K';
   return Math.round(n).toString();
 }
 
@@ -386,15 +457,19 @@ const popData = PLANETS
   .sort((a, b) => b.pop - a.pop);
 const topPop = popData[0];
 document.getElementById('kpi-pop-name').textContent = topPop.name.toUpperCase();
-document.getElementById('kpi-pop-sub').textContent  =
-  `${fmtPop(topPop.pop)} INHABITANTS  ·  ${topPop.region.toUpperCase()}`;
+document.getElementById('kpi-pop-sub').innerHTML  =
+  window.innerWidth <= 768
+    ? '<strong>T</strong>rillions &nbsp;&nbsp;|&nbsp;&nbsp; <strong>B</strong>illions &nbsp;&nbsp;|&nbsp;&nbsp; <strong>M</strong>illions'
+    : `${fmtPop(topPop.pop)} INHABITANTS  ·  ${topPop.region.toUpperCase()}`;
 
 // Distance Travelled — top character = most unique worlds (matches Most Travelled chart order)
 const distRenderData = [...charDistData].sort((a, b) => b.nUnique - a.nUnique);
 const topDist = distRenderData[0];
 document.getElementById('kpi-dist-name').textContent = topDist.char.toUpperCase();
 document.getElementById('kpi-dist-sub').textContent  =
-  `${fmtLY(topDist.total)} LY  ·  ${topDist.nUnique} WORLDS`;
+  window.innerWidth <= 768
+    ? `Estimated light years in ${topDist.nUnique} planets`
+    : `${fmtLY(topDist.total)} LY  ·  ${topDist.nUnique} WORLDS`;
 
 // ═══════════════════════════════════════════════════════════════════════════
 //  CHART 3 — POPULATION BUBBLE MAP · Same styling as Most Visited World
@@ -454,6 +529,8 @@ document.getElementById('kpi-dist-sub').textContent  =
     (PLANET_POP[a.name] || 0) - (PLANET_POP[b.name] || 0)
   );
 
+  const MOBILE = window.innerWidth <= 768;
+
   // ── Inner draw function — called on init and on every toggle ─────────────
   function drawBubbles(hideCoruscant) {
     gZoom.selectAll('.pop-planet-g').remove();   // clear previous render
@@ -470,7 +547,7 @@ document.getElementById('kpi-dist-sub').textContent  =
       .domain([0, maxPop])
       .interpolator(d3.interpolateRgbBasis(['#0c1e40', '#1466c4', '#00d4ff', '#f5c842']));
 
-    const top5Names = new Set(visiblePops.slice(0, 5).map(d => d.name));
+    const top5PopNames = new Set(visiblePops.slice(0, 10).map(d => d.name));
 
     drawOrder.forEach(p => {
       if (hideCoruscant && OUTLIERS.has(p.name)) return;
@@ -478,7 +555,7 @@ document.getElementById('kpi-dist-sub').textContent  =
       const pop      = PLANET_POP[p.name] || 0;
       const [px, py] = pxPy(p, BW, BH, BP);
 
-      if (pop === 0) {
+      if (pop === 0 || (MOBILE && !top5PopNames.has(p.name))) {
         gZoom.append('g').attr('class', 'pop-planet-g')
           .append('circle')
           .attr('cx', px).attr('cy', py).attr('r', 2.5)
@@ -509,10 +586,18 @@ document.getElementById('kpi-dist-sub').textContent  =
         .attr('stroke', col)
         .attr('stroke-width', pop >= 1e9 ? 2.5 : 1.8)
         .attr('opacity', 0.9)
-        .attr('filter', top5Names.has(p.name) ? 'url(#pop-bubble-glow)' : null);
+        .attr('filter', top5PopNames.has(p.name) ? 'url(#pop-bubble-glow)' : null);
 
-      // Population label inside bubble (only if big enough to read)
-      if (r >= 8) {
+      // Population label
+      if (MOBILE) {
+        // All top-10: pop number just above bubble rim, planet name above that
+        g.append('text')
+          .attr('text-anchor', 'middle').attr('y', -(r + 4))
+          .attr('font-family', 'Share Tech Mono, monospace')
+          .attr('font-size', '20px')
+          .attr('fill', pop >= 1e9 ? '#f5c842' : '#00d4ff')
+          .attr('pointer-events', 'none').text(fmtPopInt(pop));
+      } else if (r >= 8) {
         const fontSize = r >= 18 ? 11 : r >= 12 ? 10 : 9;
         g.append('text')
           .attr('text-anchor', 'middle').attr('dy', fontSize * 0.38)
@@ -522,10 +607,10 @@ document.getElementById('kpi-dist-sub').textContent  =
           .attr('pointer-events', 'none').text(fmtPop(pop));
       }
 
-      // Planet name above bubble
-      const nameFontSize = pop >= 1e10 ? 10 : 9;
+      // Planet name above bubble (shifted higher on mobile to clear the pop label)
+      const nameFontSize = MOBILE ? 20 : (pop >= 1e10 ? 10 : 9);
       g.append('text')
-        .attr('text-anchor', 'middle').attr('y', -(r + 7))
+        .attr('text-anchor', 'middle').attr('y', MOBILE ? -(r + nameFontSize + 10) : -(r + 7))
         .attr('font-family', 'Share Tech Mono, monospace')
         .attr('font-size', `${nameFontSize}px`)
         .attr('fill', pop >= 1e9 ? '#c8d8f0' : '#7ab8ff')
@@ -569,8 +654,10 @@ document.getElementById('kpi-dist-sub').textContent  =
       const visTop = hidden ? popData.find(d => !OUTLIERS_SET.has(d.name)) : popData[0];
       if (visTop) {
         document.getElementById('kpi-pop-name').textContent = visTop.name.toUpperCase();
-        document.getElementById('kpi-pop-sub').textContent  =
-          `${fmtPop(visTop.pop)} INHABITANTS  ·  ${visTop.region.toUpperCase()}`;
+        document.getElementById('kpi-pop-sub').innerHTML  =
+          window.innerWidth <= 768
+            ? '<strong>T</strong>rillions &nbsp;&nbsp;|&nbsp;&nbsp; <strong>B</strong>illions &nbsp;&nbsp;|&nbsp;&nbsp; <strong>M</strong>illions'
+            : `${fmtPop(visTop.pop)} INHABITANTS  ·  ${visTop.region.toUpperCase()}`;
       }
     });
   }
@@ -581,14 +668,18 @@ document.getElementById('kpi-dist-sub').textContent  =
 // ═══════════════════════════════════════════════════════════════════════════
 
 (function buildDistChart() {
+  const MOBILE  = window.innerWidth <= 768;
   const DW = 580, DH = 560;
-  const DP = { t: 8, r: 76, b: 8, l: 114 };
-  const innerW = DW - DP.l - DP.r;    // 390
+  const DP = { t: 8, r: MOBILE ? 100 : 76, b: 8, l: MOBILE ? 165 : 114 };
+  const innerW = DW - DP.l - DP.r;    // 315 mobile / 390 desktop
   const innerH = DH - DP.t - DP.b;    // 544
-  const nChars = charDistData.length;  // 14
-  const bw     = innerH / nChars;      // ~38.9
 
-  const maxDist = d3.max(distRenderData, d => d.total);
+  // Top 5 only on mobile
+  const displayDistData = MOBILE ? distRenderData.slice(0, 10) : distRenderData;
+  const nChars = displayDistData.length;
+  const bw     = innerH / nChars;      // ~38.9 desktop / ~108.8 mobile
+
+  const maxDist = d3.max(displayDistData, d => d.total);
   const xScale  = d3.scaleLinear().domain([0, maxDist]).range([0, innerW]);
 
   const TOP_CHAR = distRenderData[0].char;
@@ -619,7 +710,7 @@ document.getElementById('kpi-dist-sub').textContent  =
   sgM.append('feMergeNode').attr('in', 'SourceGraphic');
 
   // ── Rows ──────────────────────────────────────────────────────────────────
-  distRenderData.forEach((d, i) => {
+  displayDistData.forEach((d, i) => {
     const rowCy    = DP.t + i * bw + bw / 2;
     const rowColor = d.char === TOP_CHAR ? GOLD : BLUE;
     const isTop    = d.char === TOP_CHAR;
@@ -691,16 +782,16 @@ document.getElementById('kpi-dist-sub').textContent  =
     rowG.append('text')
       .attr('x', shipX + 14)
       .attr('y', rowCy + 5)
-      .attr('font-family', 'Share Tech Mono, monospace').attr('font-size', '11px')
+      .attr('font-family', 'Share Tech Mono, monospace').attr('font-size', MOBILE ? '22px' : '11px')
       .attr('fill', rowColor).attr('opacity', 0.65)
-      .text(fmtLY(d.total) + ' LY');
+      .text((MOBILE ? fmtLYInt(d.total) : fmtLY(d.total)) + ' LY');
 
     // Character name
     rowG.append('text')
       .attr('x', DP.l - 10)
       .attr('y', rowCy + 5)
       .attr('text-anchor', 'end')
-      .attr('font-family', 'Share Tech Mono, monospace').attr('font-size', '13px')
+      .attr('font-family', 'Share Tech Mono, monospace').attr('font-size', MOBILE ? '28px' : '13px')
       .attr('fill', rowColor)
       .text(d.char);
   });
@@ -768,6 +859,11 @@ document.getElementById('kpi-dist-sub').textContent  =
 
 (function initDashboardLayout() {
   function sizeKpiCards() {
+    // On mobile, CSS height:auto governs — clear any previously set inline height
+    if (window.innerWidth <= 768) {
+      document.querySelectorAll('.dash-kpi-card').forEach(c => c.style.height = '');
+      return;
+    }
     const scrollEl = document.querySelector('.dash-scroll');
     if (!scrollEl) return;
     const pageH  = scrollEl.clientHeight;

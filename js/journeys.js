@@ -624,6 +624,9 @@ function jumpToEpisode(ep) {
     btn.classList.toggle('active', on);
     btn.setAttribute('aria-pressed', on ? 'true' : 'false');
   });
+  // Keep mobile dropdown in sync
+  const mSel = document.getElementById('ep-mobile-select');
+  if (mSel) mSel.value = ep;
   renderJourneysPanel();
   renderJourneysMap(0, true);
 }
@@ -735,3 +738,36 @@ document.getElementById('journeys-beat-area').appendChild(jHintEl);
 
 renderJourneysPanel();
 renderJourneysMap(0, false);
+
+// ── Mobile: dropdown selector + expand/collapse map ───────────────────────────
+if (window.innerWidth <= 768) {
+  // Episode dropdown — injected before the beat area inside the story panel
+  const epWrap = document.createElement('div');
+  epWrap.className = 'mobile-selector-wrap';
+  const epSel = document.createElement('select');
+  epSel.id = 'ep-mobile-select';
+  epSel.className = 'mobile-select';
+  epSel.setAttribute('aria-label', 'Select an episode');
+  EP_LIST.forEach(ep => {
+    const opt = document.createElement('option');
+    opt.value = ep;
+    opt.textContent = `Episode ${ep} — ${EPISODE_DATA[ep].title}`;
+    if (ep === activeEp) opt.selected = true;
+    epSel.appendChild(opt);
+  });
+  epSel.addEventListener('change', () => jumpToEpisode(epSel.value));
+  epWrap.appendChild(epSel);
+  const jBeatArea = document.getElementById('journeys-beat-area');
+  jBeatArea.parentNode.insertBefore(epWrap, jBeatArea);
+
+  // Expand/collapse map
+  const journeysMapWrap = document.getElementById('journeys-map-wrap');
+  const journeysExpandBtn = document.createElement('button');
+  journeysExpandBtn.className = 'map-expand-btn';
+  journeysExpandBtn.textContent = 'EXPAND MAP';
+  journeysExpandBtn.addEventListener('click', () => {
+    const expanded = journeysMapWrap.classList.toggle('map-expanded');
+    journeysExpandBtn.textContent = expanded ? '✕ CLOSE' : 'EXPAND MAP';
+  });
+  journeysMapWrap.appendChild(journeysExpandBtn);
+}

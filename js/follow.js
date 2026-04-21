@@ -687,6 +687,9 @@ function jumpToChar(name, beatIdx) {
     b.classList.toggle('active', on);
     b.setAttribute('aria-pressed', on ? 'true' : 'false');
   });
+  // Keep mobile dropdown in sync
+  const mSel = document.getElementById('char-mobile-select');
+  if (mSel) mSel.value = name;
   renderFollowMap(beatIdx, false);
   renderStoryPanel();
 }
@@ -815,3 +818,56 @@ document.getElementById('story-beat-area').appendChild(_hint);
 
 renderFollowMap(0, false);
 renderStoryPanel();
+
+// ── Mobile: dropdown selector + expand/collapse map + touch swipe ─────────────
+if (window.innerWidth <= 768) {
+  // Character dropdown — injected before the beat area inside the story panel
+  const charWrap = document.createElement('div');
+  charWrap.className = 'mobile-selector-wrap';
+  const charSel = document.createElement('select');
+  charSel.id = 'char-mobile-select';
+  charSel.className = 'mobile-select';
+  charSel.setAttribute('aria-label', 'Select a character');
+  CHAR_LIST.forEach(name => {
+    const opt = document.createElement('option');
+    opt.value = name;
+    opt.textContent = name;
+    if (name === activeChar) opt.selected = true;
+    charSel.appendChild(opt);
+  });
+  charSel.addEventListener('change', () => jumpToChar(charSel.value, 0));
+  charWrap.appendChild(charSel);
+  const beatArea = document.getElementById('story-beat-area');
+  beatArea.parentNode.insertBefore(charWrap, beatArea);
+
+  // Expand button
+  const followMapWrap = document.getElementById('follow-map-wrap');
+  const followExpandBtn = document.createElement('button');
+  followExpandBtn.className = 'map-expand-btn';
+  followExpandBtn.textContent = 'EXPAND MAP';
+  followExpandBtn.addEventListener('click', () => {
+    const expanded = followMapWrap.classList.toggle('map-expanded');
+    followExpandBtn.textContent = expanded ? '✕ CLOSE' : 'EXPAND MAP';
+  });
+  followMapWrap.appendChild(followExpandBtn);
+
+  // Touch swipe to navigate beats
+  let followTouchY = 0;
+  document.getElementById('follow').addEventListener('touchstart',
+    e => { followTouchY = e.touches[0].clientY; }, { passive: true });
+  document.getElementById('follow').addEventListener('touchend', e => {
+    // Don't intercept taps on buttons
+    if (e.target.closest('button, .char-btn')) return;
+    const dy = followTouchY - e.changedTouches[0].clientY;
+    if (Math.abs(dy) < 40) return;
+    const journey = JOURNEYS[activeChar];
+    const dir = dy > 0 ? 1 : -1;
+    const next = activeBeat + dir;
+    if (next >= 0 && next < journey.length) {
+      const prev = activeBeat;
+      activeBeat = next;
+      renderFollowMap(activeBeat, journey[activeBeat].planet !== journey[prev].planet);
+      updatePanelActive();
+    }
+  }, { passive: true });
+}

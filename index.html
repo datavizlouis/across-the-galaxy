@@ -37,6 +37,9 @@
     <a href="#dashboard" class="btn btn-ghost">Fun Facts</a>
     <a href="#credits"   class="btn btn-ghost">Credits</a>
   </div>
+  <br><br>
+  <p class="mobile-disclaimer" aria-live="polite">Best viewed on a desktop.<br>The mobile experience is limited.</p>
+
   <div class="scroll-hint" aria-hidden="true">
     scroll
     <svg width="10" height="14" viewBox="0 0 10 14" fill="none" aria-hidden="true">
@@ -66,7 +69,7 @@
       </a>
     </div>
   </div>
-  <p class="section-sub">Select a character to trace their path and scroll up/down to navigate through the story beats. You can also hover over a planet for more information.</p>
+  <p class="section-sub">Select a character to navigate through the story beats.</p>
 
   <!-- Spacer preserves the height the old char-selector occupied -->
   <div class="char-selector-spacer"></div>
@@ -104,7 +107,7 @@
       </a>
     </div>
   </div>
-  <p class="section-sub">Select an episode to trace every path and scroll up/down to navigate through the story beats. You can also hover over a planet for more information.</p>
+  <p class="section-sub">Select an episode to navigate through the story beats.</p>
 
   <div class="journeys-layout">
     <div id="journeys-map-wrap">
@@ -149,6 +152,7 @@
 
         <!-- KPI 1: Most Visited World -->
         <div class="dash-kpi-card">
+          <div class="dash-kpi-top5-pill">Top 10 only</div>
           <div class="dash-kpi-label">Most Visited World</div>
           <div class="dash-kpi-value-row">
             <div class="dash-kpi-value" id="kpi-mvw-name">—</div>
@@ -167,13 +171,16 @@
 
         <!-- KPI 2: Most Populated World -->
         <div class="dash-kpi-card">
+          <div class="dash-kpi-top5-pill">Top 10 only</div>
           <div class="dash-kpi-label">Most Populated World</div>
           <div class="dash-kpi-value-row">
             <div class="dash-kpi-value" id="kpi-pop-name">—</div>
-            <div class="dash-kpi-pill">Bubble Size = Population</div>
-          </div>
-          <div class="dash-kpi-toggle-row">
-            <button id="toggle-coruscant" class="dash-kpi-toggle">Hide Outliers</button>
+            <div class="dash-kpi-value-right">
+              <div class="dash-kpi-pill">Bubble Size = Population</div>
+              <div class="dash-kpi-toggle-row">
+                <button id="toggle-coruscant" class="dash-kpi-toggle">Hide Outliers</button>
+              </div>
+            </div>
           </div>
           <div class="dash-kpi-sub" id="kpi-pop-sub">—</div>
           <div class="dash-kpi-divider"></div>
@@ -196,6 +203,7 @@
 
         <!-- KPI 3: Most Travelled Character -->
         <div class="dash-kpi-card">
+          <div class="dash-kpi-top5-pill">Top 10 only</div>
           <div class="dash-kpi-label">Most Travelled Character</div>
           <div class="dash-kpi-value-row">
             <div class="dash-kpi-value" id="kpi-mtc-name">—</div>
@@ -214,6 +222,7 @@
 
         <!-- KPI 4: Distance Travelled -->
         <div class="dash-kpi-card">
+          <div class="dash-kpi-top5-pill">Top 10 only</div>
           <div class="dash-kpi-label">Distance Travelled</div>
           <div class="dash-kpi-value-row">
             <div class="dash-kpi-value" id="kpi-dist-name">—</div>
