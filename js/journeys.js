@@ -352,12 +352,18 @@ function attachJTooltip(beat) {
 }
 
 // ── Arc path builder (per-char offset keeps overlapping paths visually distinct)
-function makeJArcPath(a, b, charOffset) {
+// Returns { d, mpx, mpy, angle } — d is the SVG path, mpx/mpy is bezier midpoint, angle is tangent.
+function makeJArcGeom(a, b, charOffset) {
   const [x1,y1] = pxPy(a,W,H,PAD), [x2,y2] = pxPy(b,W,H,PAD);
   const mx=(x1+x2)/2, my=(y1+y2)/2, dx=x2-x1, dy=y2-y1;
   const bend = 0.18 + (charOffset || 0) * 0.035;
-  return `M ${x1},${y1} Q ${mx-dy*bend},${my+dx*bend} ${x2},${y2}`;
+  const cx = mx-dy*bend, cy = my+dx*bend;
+  const mpx = 0.25*x1 + 0.5*cx + 0.25*x2;
+  const mpy = 0.25*y1 + 0.5*cy + 0.25*y2;
+  const angle = Math.atan2(y2-y1, x2-x1) * 180 / Math.PI;
+  return { d: `M ${x1},${y1} Q ${cx},${cy} ${x2},${y2}`, mpx, mpy, angle };
 }
+function makeJArcPath(a, b, charOffset) { return makeJArcGeom(a, b, charOffset).d; }
 
 // ── Map render ────────────────────────────────────────────────────────────────
 function renderJourneysMap(beatIdx, animate) {
@@ -402,20 +408,84 @@ function renderJourneysMap(beatIdx, animate) {
   });
 
   // ── Per-character paths for this episode ──
+  const beatCharSet = new Set(beat.chars);
   let charOffset = 0;
+  let activeCharIdx = 0;
+
+  function addMidArrow(mpx, mpy, angle, color, opacity, small) {
+    const d = small ? 'M-3,-2 L4,0 L-3,2 Z' : 'M-5,-3 L6,0 L-5,3 Z';
+    jPathG.append('path')
+      .attr('d', d).attr('fill', color).attr('opacity', opacity)
+      .attr('pointer-events', 'none')
+      .attr('transform', `translate(${mpx},${mpy}) rotate(${angle})`);
+  }
+
+  function attachPathTooltip(el, charName, color, fromPlanet, toPlanet, beatText) {
+    el.style('cursor', 'pointer')
+      .on('mouseenter', function () {
+        jTt.innerHTML = `
+          <div class="tt-beat-char" style="color:${color}">${charName}</div>
+          <div class="tt-row">
+            <span class="tt-label">FROM</span>
+            <span class="tt-value">${fromPlanet} → ${toPlanet}</span>
+          </div>
+          ${beatText ? `<div class="tt-divider"></div><div class="tt-beat-desc">${beatText}</div>` : ''}
+        `;
+        jTt.style.opacity = 1;
+      })
+      .on('mousemove', function (event) {
+        const x = event.clientX, y = event.clientY;
+        const ww = window.innerWidth, wh = window.innerHeight;
+        jTt.style.left = (x + 20 + 320 > ww ? x - 336 : x + 20) + 'px';
+        jTt.style.top  = (y + 10 + jTt.offsetHeight > wh ? y - jTt.offsetHeight - 10 : y + 10) + 'px';
+      })
+      .on('mouseleave', () => { jTt.style.opacity = 0; });
+  }
+
   CHAR_LIST.forEach(charName => {
     const epBeats = (JOURNEYS[charName] || []).filter(b => b.ep === activeEp);
     if (epBeats.length < 2) { charOffset++; return; }
     const color = CHAR_COLORS[charName];
+    const isActive = beatCharSet.has(charName);
+    const delay = (animate && isActive) ? activeCharIdx * 55 : 0;
+    if (isActive) activeCharIdx++;
+
     for (let i = 0; i < epBeats.length - 1; i++) {
       const a = planetIndex[epBeats[i].planet];
       const b = planetIndex[epBeats[i+1].planet];
       if (!a || !b || a.name === b.name) continue;
-      jPathG.append('path')
-        .attr('d', makeJArcPath(a, b, charOffset))
-        .attr('fill', 'none').attr('stroke', color)
-        .attr('stroke-width', 1.2).attr('stroke-dasharray', '3,5')
-        .attr('opacity', 0.38);
+
+      const fromPlanet = epBeats[i].planet;
+      const toPlanet   = epBeats[i+1].planet;
+      if (fromPlanet !== beat.planet && toPlanet !== beat.planet) continue;
+      const geom = makeJArcGeom(a, b, charOffset);
+      const beatText   = epBeats[i+1].beat || '';
+
+      // Visible path
+      const pathEl = jPathG.append('path')
+        .attr('d', geom.d).attr('fill', 'none').attr('stroke', color)
+        .attr('stroke-width', isActive ? 2 : 0.8)
+        .attr('opacity', isActive ? (animate ? 0.8 : 0.6) : 0.18)
+        .attr('pointer-events', 'none');
+
+      // Wide transparent hit area for tooltip
+      const hitEl = jPathG.append('path')
+        .attr('d', geom.d).attr('fill', 'none')
+        .attr('stroke', 'transparent').attr('stroke-width', 12);
+      attachPathTooltip(hitEl, charName, color, fromPlanet, toPlanet, beatText);
+
+      if (isActive && animate) {
+        const len = pathEl.node().getTotalLength();
+        pathEl.attr('stroke-dasharray', len).attr('stroke-dashoffset', len)
+          .transition().delay(delay).duration(700).ease(d3.easeQuadOut)
+          .attr('stroke-dashoffset', 0)
+          .on('end', () => addMidArrow(geom.mpx, geom.mpy, geom.angle, color, 0.85, false));
+      } else if (isActive) {
+        addMidArrow(geom.mpx, geom.mpy, geom.angle, color, 0.7, false);
+      } else {
+        pathEl.attr('stroke-dasharray', '2,6');
+        addMidArrow(geom.mpx, geom.mpy, geom.angle, color, 0.18, true);
+      }
     }
     charOffset++;
   });
